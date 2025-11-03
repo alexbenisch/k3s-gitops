@@ -4,6 +4,8 @@ secrets/
 kubeconfig
 *.key
 *.pem
+flux-deploy-key
+flux-deploy-key.pub
 
 # Terraform
 *.tfvars

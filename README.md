@@ -1,6 +1,15 @@
 # K3s GitOps Demo Cluster
 
+**Status**: ✅ Fully Operational | **Last Updated**: 2025-11-03
+
 A production-ready Kubernetes cluster on Hetzner Cloud, managed via GitOps with Flux CD. This repository demonstrates modern DevOps practices including Infrastructure as Code, GitOps workflows, and automated deployments.
+
+## 🚀 Live Applications
+
+- **Wallabag**: https://wallabag.k8s-demo.de (Read-it-later service)
+- **Linkding**: https://linkding.k8s-demo.de (Bookmark manager)
+
+Both applications are secured with valid Let's Encrypt TLS certificates and automatically deployed via GitOps.
 
 ## Architecture
 
@@ -45,9 +54,17 @@ A production-ready Kubernetes cluster on Hetzner Cloud, managed via GitOps with 
 ### Required Secrets
 Set these as GitHub repository secrets:
 - `HETZNER_TOKEN` - Hetzner Cloud API token
+- `HETZNER_DNS_TOKEN` - Hetzner DNS API token (for Let's Encrypt DNS-01 challenges)
 - `SSH_PUBLIC_KEY` - Your SSH public key for server access
 - `SSH_PRIVATE_KEY` - Your SSH private key for Ansible deployment
 - `GITHUB_TOKEN` - Automatically provided by GitHub Actions
+
+**Important**: The `hetzner-dns-token` Kubernetes secret must be created manually on the cluster for security:
+```bash
+kubectl create secret generic hetzner-dns-token \
+  --from-literal=api-key=YOUR_HETZNER_DNS_TOKEN \
+  --namespace=cert-manager
+```
 
 ### Domain Setup
 1. Register domain at Hetzner DNS (k8s-demo.de)
