@@ -1,0 +1,30 @@
+---
+- name: Download k3s install script
+  get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s-install.sh
+    mode: '0755'
+
+- name: Read k3s token from local file
+  slurp:
+    src: /tmp/k3s-token
+  register: k3s_token
+  delegate_to: localhost
+
+- name: Install k3s worker
+  shell: |
+    K3S_URL=https://{{ hostvars[groups['master'][0]]['ansible_host'] }}:6443 \
+    K3S_TOKEN={{ k3s_token.content | b64decode | trim }} \
+    sh /tmp/k3s-install.sh
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Wait for k3s agent to be ready
+  systemd:
+    name: k3s-agent
+    state: started
+    enabled: yes
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 10

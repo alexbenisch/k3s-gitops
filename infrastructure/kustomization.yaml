@@ -1,0 +1,8 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - sources/bitnami.yaml
+  - controllers/traefik.yaml
+  - controllers/cert-manager.yaml
+  - controllers/cert-manager-webhook-hetzner.yaml

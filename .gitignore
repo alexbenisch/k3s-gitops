@@ -1,0 +1,28 @@
+# Secrets and sensitive data
+*.secret.yaml
+secrets/
+kubeconfig
+*.key
+*.pem
+
+# Terraform
+*.tfvars
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Ansible
+ansible/inventory/hosts
+*.retry
+
+# Temporary files
+*.tmp
+*.swp
+*~
+.DS_Store
+
+# Neovim
+*.un~
+Session.vim
+.netrwhist

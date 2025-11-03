@@ -1,0 +1,40 @@
+name: Bootstrap Flux
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bootstrap:
+    name: Bootstrap Flux CD
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Kubeconfig
+        uses: actions/download-artifact@v4
+        with:
+          name: kubeconfig
+          path: .
+
+      - name: Setup Flux CLI
+        uses: fluxcd/flux2/action@main
+
+      - name: Bootstrap Flux
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KUBECONFIG: ./kubeconfig
+        run: |
+          flux bootstrap github \
+            --owner=${{ github.repository_owner }} \
+            --repository=${{ github.event.repository.name }} \
+            --branch=main \
+            --path=clusters/demo \
+            --personal
+
+      - name: Verify Flux Installation
+        env:
+          KUBECONFIG: ./kubeconfig
+        run: |
+          flux get all -A
