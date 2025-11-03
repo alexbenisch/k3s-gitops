@@ -31,6 +31,14 @@ spec:
   values:
     service:
       type: LoadBalancer
+    deployment:
+      replicas: 1
+    nodeSelector:
+      node-role.kubernetes.io/control-plane: "true"
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
     ports:
       web:
         port: 80
