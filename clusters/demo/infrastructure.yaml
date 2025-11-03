@@ -11,5 +11,4 @@ spec:
     name: flux-system
   path: ./infrastructure
   prune: true
-  wait: true
   timeout: 5m0s
