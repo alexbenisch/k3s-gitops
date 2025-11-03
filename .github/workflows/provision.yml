@@ -14,7 +14,6 @@ on:
 
 env:
   TF_VAR_hetzner_token: ${{ secrets.HETZNER_TOKEN }}
-  TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
 
 jobs:
   terraform:

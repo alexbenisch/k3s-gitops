@@ -13,10 +13,9 @@ provider "hcloud" {
   token = var.hetzner_token
 }
 
-# SSH Key
-resource "hcloud_ssh_key" "default" {
-  name       = "k3s-demo-key"
-  public_key = var.ssh_public_key
+# SSH Key - use existing key from Hetzner
+data "hcloud_ssh_key" "default" {
+  name = "alex@tpad"
 }
 
 # Network
@@ -106,7 +105,7 @@ resource "hcloud_server" "master" {
   image       = var.os_image
   server_type = var.master_server_type
   location    = var.location
-  ssh_keys    = [hcloud_ssh_key.default.id]
+  ssh_keys    = [data.hcloud_ssh_key.default.id]
   firewall_ids = [hcloud_firewall.k3s_firewall.id]
 
   network {
@@ -129,7 +128,7 @@ resource "hcloud_server" "worker" {
   image       = var.os_image
   server_type = var.worker_server_type
   location    = var.location
-  ssh_keys    = [hcloud_ssh_key.default.id]
+  ssh_keys    = [data.hcloud_ssh_key.default.id]
   firewall_ids = [hcloud_firewall.k3s_firewall.id]
 
   network {

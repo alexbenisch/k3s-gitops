@@ -4,11 +4,6 @@ variable "hetzner_token" {
   sensitive   = true
 }
 
-variable "ssh_public_key" {
-  description = "SSH public key for server access"
-  type        = string
-}
-
 variable "location" {
   description = "Hetzner datacenter location"
   type        = string
