@@ -98,8 +98,9 @@ spec:
         namespace: flux-system
   values:
     provider: webhook
-    extraArgs:
-      - --webhook-provider-url=http://external-dns-hetzner-webhook.external-dns.svc.cluster.local:8888
+    env:
+      - name: EXTERNAL_DNS_WEBHOOK_PROVIDER_URL
+        value: http://external-dns-hetzner-webhook.external-dns.svc.cluster.local:8888
     domainFilters:
       - k8s-demo.de
     policy: sync
