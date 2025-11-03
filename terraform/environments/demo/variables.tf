@@ -7,7 +7,7 @@ variable "hetzner_token" {
 variable "location" {
   description = "Hetzner datacenter location"
   type        = string
-  default     = "nbg1"  # Nuremberg
+  default     = "fsn1"  # Falkenstein (alternative: hel1, ash)
 }
 
 variable "os_image" {
