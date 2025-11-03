@@ -29,6 +29,7 @@
     content: "{{ k3s_token.content | b64decode }}"
     dest: /tmp/k3s-token
   delegate_to: localhost
+  become: no
 
 - name: Get kubeconfig
   slurp:
@@ -40,6 +41,7 @@
     content: "{{ kubeconfig.content | b64decode }}"
     dest: "{{ playbook_dir }}/../kubeconfig"
   delegate_to: localhost
+  become: no
 
 - name: Update kubeconfig server address
   replace:
@@ -47,3 +49,4 @@
     regexp: 'https://127.0.0.1:6443'
     replace: "https://{{ ansible_host }}:6443"
   delegate_to: localhost
+  become: no

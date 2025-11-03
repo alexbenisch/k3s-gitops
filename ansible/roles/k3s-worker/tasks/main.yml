@@ -10,6 +10,7 @@
     src: /tmp/k3s-token
   register: k3s_token
   delegate_to: localhost
+  become: no
 
 - name: Install k3s worker
   shell: |
