@@ -56,41 +56,53 @@ Set these as GitHub repository secrets:
 
 ## Getting Started
 
-### 1. Fork and Clone
+### Option A: Local Deployment (Recommended)
+
+**Prerequisites**: Terraform, Ansible, kubectl installed locally
+
+1. **Provision Infrastructure**
 ```bash
-git clone https://github.com/YOUR_USERNAME/k3s-gitops.git
-cd k3s-gitops
-```
+export TF_VAR_hetzner_token="your-token"
+export TF_VAR_ssh_public_key="$(cat ~/.ssh/id_rsa.pub)"
 
-### 2. Add GitHub Secrets
-Go to Settings > Secrets and Variables > Actions and add:
-- `HETZNER_TOKEN`
-- `SSH_PUBLIC_KEY`
-- `SSH_PRIVATE_KEY`
-
-### 3. Provision Infrastructure
-Go to Actions > "Provision K3s Cluster" > Run workflow
-- Choose "apply" to create infrastructure
-- This will:
-  - Create Hetzner Cloud servers
-  - Configure networking and firewall
-  - Install K3s via Ansible
-  - Generate and upload kubeconfig
-
-### 4. Bootstrap Flux
-Go to Actions > "Bootstrap Flux" > Run workflow
-- This will:
-  - Install Flux CD on the cluster
-  - Connect Flux to this GitHub repository
-  - Deploy infrastructure components (Traefik, cert-manager)
-  - Deploy applications (wallabag, linkding)
-
-### 5. Configure DNS
-After deployment, get the master node IP:
-```bash
 cd terraform/environments/demo
-terraform output master_ip
+terraform init
+terraform apply
 ```
+
+2. **Configure Cluster with Ansible**
+```bash
+# Generate inventory from Terraform outputs
+./generate-inventory.sh  # See LOCAL_SETUP.md
+
+cd ../../ansible
+ansible-playbook -i inventory/hosts site.yml
+```
+
+3. **Bootstrap Flux**
+```bash
+export KUBECONFIG=$(pwd)/kubeconfig
+flux bootstrap github \
+  --owner=YOUR_USERNAME \
+  --repository=k3s-gitops \
+  --branch=main \
+  --path=clusters/demo
+```
+
+**See [LOCAL_SETUP.md](LOCAL_SETUP.md) for detailed instructions.**
+
+### Option B: GitHub Actions
+
+**Prerequisites**: GitHub repository with secrets configured
+
+1. Add GitHub secrets: `HETZNER_TOKEN`, `SSH_PUBLIC_KEY`
+2. Run "Provision K3s Cluster" workflow (Terraform only)
+3. Configure cluster with Ansible locally (see LOCAL_SETUP.md)
+4. Run "Bootstrap Flux" workflow
+
+**See [SETUP.md](SETUP.md) for step-by-step guide.**
+
+### Configure DNS (Both Options)
 
 Create A records in Hetzner DNS:
 - `wallabag.k8s-demo.de` → `<master_ip>`

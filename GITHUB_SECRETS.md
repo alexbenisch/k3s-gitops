@@ -51,27 +51,9 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC... your-email@example.com
 
 ---
 
-### 3. SSH_PRIVATE_KEY
+---
 
-**Description**: Your SSH private key for Ansible to configure servers
-
-**How to get it**:
-```bash
-cat ~/.ssh/id_rsa
-```
-
-**Value**: Entire output including header and footer:
-```
------BEGIN OPENSSH PRIVATE KEY-----
-b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAA
-...
------END OPENSSH PRIVATE KEY-----
-```
-
-**Important**:
-- Include the full key with BEGIN and END lines
-- Keep this secret secure (it's your private key!)
-- Never commit this to Git
+**Note**: SSH_PRIVATE_KEY is NOT needed! Ansible runs from your local machine and uses your local SSH key to connect to the servers. Only the public key needs to be added to the servers (done by Terraform).
 
 ---
 
