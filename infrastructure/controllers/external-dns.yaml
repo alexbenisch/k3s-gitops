@@ -48,7 +48,7 @@ spec:
         - name: http
           containerPort: 8888
         env:
-        - name: HETZNER_API_TOKEN
+        - name: HETZNER_API_KEY
           valueFrom:
             secretKeyRef:
               name: hetzner-dns-token
