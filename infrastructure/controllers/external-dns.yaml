@@ -11,7 +11,66 @@ metadata:
   namespace: external-dns
 type: Opaque
 stringData:
-  api-token: ${HETZNER_TOKEN}
+  HETZNER_API_TOKEN: ${HETZNER_TOKEN}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-dns-hetzner-webhook
+  namespace: external-dns
+spec:
+  ports:
+  - name: http
+    port: 8888
+    targetPort: http
+  selector:
+    app: external-dns-hetzner-webhook
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns-hetzner-webhook
+  namespace: external-dns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: external-dns-hetzner-webhook
+  template:
+    metadata:
+      labels:
+        app: external-dns-hetzner-webhook
+    spec:
+      containers:
+      - name: webhook
+        image: ghcr.io/mconfalonieri/external-dns-hetzner-webhook:v1.2.1
+        ports:
+        - name: http
+          containerPort: 8888
+        env:
+        - name: HETZNER_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hetzner-dns-token
+              key: HETZNER_API_TOKEN
+        - name: SERVER_HOST
+          value: "0.0.0.0"
+        - name: SERVER_PORT
+          value: "8888"
+        - name: DOMAIN_FILTER
+          value: "k8s-demo.de"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
@@ -22,43 +81,12 @@ spec:
   interval: 24h
   url: https://kubernetes-sigs.github.io/external-dns
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: external-dns-hetzner-webhook
-  namespace: flux-system
-spec:
-  interval: 24h
-  url: https://mconfalonieri.github.io/external-dns-hetzner-webhook
----
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
-metadata:
-  name: external-dns-hetzner-webhook
-  namespace: external-dns
-spec:
-  interval: 30m
-  chart:
-    spec:
-      chart: external-dns-hetzner-webhook
-      version: '1.x'
-      sourceRef:
-        kind: HelmRepository
-        name: external-dns-hetzner-webhook
-        namespace: flux-system
-  values:
-    hetzner:
-      secretName: hetzner-dns-token
-      apiKey: api-token
----
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: external-dns
   namespace: external-dns
 spec:
-  dependsOn:
-    - name: external-dns-hetzner-webhook
   interval: 30m
   chart:
     spec:
@@ -71,13 +99,8 @@ spec:
   values:
     provider:
       name: webhook
-      webhook:
-        image:
-          repository: registry.k8s.io/external-dns/external-dns
-          tag: v0.15.0
-        env:
-          - name: WEBHOOK_PROVIDER_URL
-            value: http://external-dns-hetzner-webhook.external-dns.svc.cluster.local:8888
+    extraArgs:
+      - --webhook-provider-url=http://external-dns-hetzner-webhook.external-dns.svc.cluster.local:8888
     domainFilters:
       - k8s-demo.de
     policy: sync
