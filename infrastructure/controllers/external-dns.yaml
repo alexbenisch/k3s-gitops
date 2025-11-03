@@ -43,7 +43,7 @@ spec:
     spec:
       containers:
       - name: webhook
-        image: ghcr.io/mconfalonieri/external-dns-hetzner-webhook:v1.2.1
+        image: btribit/external-dns-hetzner-webhook:latest
         ports:
         - name: http
           containerPort: 8888
