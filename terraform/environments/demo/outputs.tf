@@ -5,7 +5,7 @@ output "master_ip" {
 
 output "master_private_ip" {
   description = "Private IP of the master node"
-  value       = hcloud_server.master.network[0].ip
+  value       = [for net in hcloud_server.master.network : net.ip][0]
 }
 
 output "worker_ips" {
@@ -15,7 +15,7 @@ output "worker_ips" {
 
 output "worker_private_ips" {
   description = "Private IPs of worker nodes"
-  value       = hcloud_server.worker[*].network[*].ip
+  value       = [for server in hcloud_server.worker : [for net in server.network : net.ip][0]]
 }
 
 output "network_id" {
