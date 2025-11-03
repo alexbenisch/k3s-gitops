@@ -4,15 +4,6 @@ kind: Namespace
 metadata:
   name: external-dns
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: external-dns
-  namespace: flux-system
-spec:
-  interval: 24h
-  url: https://kubernetes-sigs.github.io/external-dns
----
 apiVersion: v1
 kind: Secret
 metadata:
@@ -22,12 +13,52 @@ type: Opaque
 stringData:
   api-token: ${HETZNER_TOKEN}
 ---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: external-dns
+  namespace: flux-system
+spec:
+  interval: 24h
+  url: https://kubernetes-sigs.github.io/external-dns
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: external-dns-hetzner-webhook
+  namespace: flux-system
+spec:
+  interval: 24h
+  url: https://mconfalonieri.github.io/external-dns-hetzner-webhook
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: external-dns-hetzner-webhook
+  namespace: external-dns
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: external-dns-hetzner-webhook
+      version: '1.x'
+      sourceRef:
+        kind: HelmRepository
+        name: external-dns-hetzner-webhook
+        namespace: flux-system
+  values:
+    hetzner:
+      secretName: hetzner-dns-token
+      apiKey: api-token
+---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: external-dns
   namespace: external-dns
 spec:
+  dependsOn:
+    - name: external-dns-hetzner-webhook
   interval: 30m
   chart:
     spec:
@@ -38,13 +69,15 @@ spec:
         name: external-dns
         namespace: flux-system
   values:
-    provider: hetzner
-    env:
-      - name: HETZNER_TOKEN
-        valueFrom:
-          secretKeyRef:
-            name: hetzner-dns-token
-            key: api-token
+    provider:
+      name: webhook
+      webhook:
+        image:
+          repository: registry.k8s.io/external-dns/external-dns
+          tag: v0.15.0
+        env:
+          - name: WEBHOOK_PROVIDER_URL
+            value: http://external-dns-hetzner-webhook.external-dns.svc.cluster.local:8888
     domainFilters:
       - k8s-demo.de
     policy: sync
