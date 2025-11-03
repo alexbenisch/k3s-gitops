@@ -6,3 +6,4 @@ resources:
   - controllers/traefik.yaml
   - controllers/cert-manager.yaml
   - controllers/cert-manager-webhook-hetzner.yaml
+  - controllers/external-dns.yaml
