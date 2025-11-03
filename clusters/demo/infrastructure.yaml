@@ -13,3 +13,4 @@ spec:
   prune: true
   wait: true
   timeout: 5m0s
+  force: true
