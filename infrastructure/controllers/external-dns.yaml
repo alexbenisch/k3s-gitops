@@ -72,15 +72,6 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 5
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: external-dns
-  namespace: flux-system
-spec:
-  interval: 24h
-  url: https://kubernetes-sigs.github.io/external-dns
----
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -91,16 +82,15 @@ spec:
   chart:
     spec:
       chart: external-dns
-      version: '1.15.x'
+      version: '8.x'
       sourceRef:
         kind: HelmRepository
-        name: external-dns
+        name: bitnami
         namespace: flux-system
   values:
     provider: webhook
-    env:
-      - name: EXTERNAL_DNS_WEBHOOK_PROVIDER_URL
-        value: http://external-dns-hetzner-webhook.external-dns.svc.cluster.local:8888
+    extraArgs:
+      webhook-provider-url: http://external-dns-hetzner-webhook.external-dns.svc.cluster.local:8888
     domainFilters:
       - k8s-demo.de
     policy: sync
